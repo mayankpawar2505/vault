@@ -1,0 +1,9 @@
+input#password1{
+	width: 90%;
+	display: inline-block;
+}
+
+input#password{
+	width: 90%;
+	display: inline-block;
+}
