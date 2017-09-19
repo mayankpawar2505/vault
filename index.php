@@ -83,19 +83,22 @@
 
         <div id="register" class="animate form registration_form">
           <section class="login_content">
-            <form>
+            <form method="post" action="javascript:void(0);" name="registration_form" id="registration-form">
               <h1>Create Account</h1>
               <div>
-                <input type="text" class="form-control" placeholder="Username" required="" />
+                <input type="text" name="username" id="reg-username" class="form-control" placeholder="Username" />
+                <img id="reg-username-opener" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
-                <input type="email" class="form-control" placeholder="Email" required="" />
+                <input type="email" name="email" id="reg-email" class="form-control" placeholder="Email"/>
+                <img id="reg-email-opener" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
-                <input type="password" class="form-control" placeholder="Password" required="" />
+                <input type="text" name="password" id="reg-password" class="form-control" placeholder="Password" />
+                <img id="reg-password-opener" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
-                <a class="btn btn-default submit" href="index.html">Submit</a>
+                <button type="submit" class="btn btn-default submit">Submit</button>
               </div>
 
               <div class="clearfix"></div>
@@ -109,8 +112,8 @@
                 <br />
 
                 <div>
-                  <h1><i class="fa fa-paw"></i> Gentelella Alela!</h1>
-                  <p>&copy;<?php echo date('Y'); ?> All Rights Reserved. Gentelella Alela! is a Bootstrap 3 template. Privacy and Terms</p>
+                  <h1><i class="fa fa-truck"></i> My Vault</h1>
+                  <p>&copy; <?php echo date('Y'); ?> All Rights Reserved My Vault. Privacy and Terms</p>
                 </div>
               </div>
             </form>
@@ -118,8 +121,86 @@
         </div>
       </div>
     </div>
+    <script src="vendors/CryptoJS-master/rollups/aes.js"></script>
+    <script src="vendors/CryptoJS-master/components/enc-base64-min.js"></script>
+    <script src="vault/vendors/validator/validator.js"></script>
     <script type="text/javascript">
       $('#password')
+        .keyboard({
+          openOn : null,
+          stayOpen : true,
+          layout : 'qwerty'
+          /*layout: 'custom',
+          customLayout: {
+            'normal': [
+              '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
+              '{tab} q w e r t y u i o p [ ] \\',
+              'a s d f g h j k l ; \' {enter}',
+              '{shift} z x c v b n m , . / {shift}',
+              '{accept} {space} {left} {right}'
+            ],
+            'shift': [
+              '~ ! @ # $ % ^ & * ( ) _ + {bksp}',
+              '{tab} Q W E R T Y U I O P { } |',
+              'A S D F G H J K L : " {enter}',
+              '{shift} Z X C V B N M &lt; &gt; ? {shift}',
+              '{accept} {space} {left} {right}'
+            ]
+          }*/
+        })
+        .addTyping();
+
+        $('#reg-username')
+        .keyboard({
+          openOn : null,
+          stayOpen : true,
+          layout : 'qwerty'
+          /*layout: 'custom',
+          customLayout: {
+            'normal': [
+              '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
+              '{tab} q w e r t y u i o p [ ] \\',
+              'a s d f g h j k l ; \' {enter}',
+              '{shift} z x c v b n m , . / {shift}',
+              '{accept} {space} {left} {right}'
+            ],
+            'shift': [
+              '~ ! @ # $ % ^ & * ( ) _ + {bksp}',
+              '{tab} Q W E R T Y U I O P { } |',
+              'A S D F G H J K L : " {enter}',
+              '{shift} Z X C V B N M &lt; &gt; ? {shift}',
+              '{accept} {space} {left} {right}'
+            ]
+          }*/
+        })
+        .addTyping();
+
+        $('#reg-email')
+        .keyboard({
+          openOn : null,
+          stayOpen : true,
+          layout : 'qwerty'
+          /*layout: 'custom',
+          customLayout: {
+            'normal': [
+              '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
+              '{tab} q w e r t y u i o p [ ] \\',
+              'a s d f g h j k l ; \' {enter}',
+              '{shift} z x c v b n m , . / {shift}',
+              '{accept} {space} {left} {right}'
+            ],
+            'shift': [
+              '~ ! @ # $ % ^ & * ( ) _ + {bksp}',
+              '{tab} Q W E R T Y U I O P { } |',
+              'A S D F G H J K L : " {enter}',
+              '{shift} Z X C V B N M &lt; &gt; ? {shift}',
+              '{accept} {space} {left} {right}'
+            ]
+          }*/
+        })
+        .addTyping();
+
+        $('#reg-password')
         .keyboard({
           openOn : null,
           stayOpen : true,
@@ -186,6 +267,72 @@
         } else {
           kb.reveal();
         }
+      });
+
+      $('#reg-email-opener').click(function(){
+        var kb = $('#reg-email').getkeyboard();
+        // close the keyboard if the keyboard is visible and the button is clicked a second time
+        if ( kb.isOpen ) {
+          kb.close();
+        } else {
+          kb.reveal();
+        }
+      });
+
+      $('#reg-username-opener').click(function(){
+        var kb = $('#reg-username').getkeyboard();
+        // close the keyboard if the keyboard is visible and the button is clicked a second time
+        if ( kb.isOpen ) {
+          kb.close();
+        } else {
+          kb.reveal();
+        }
+      });
+
+      $('#reg-password-opener').click(function(){
+        var kb = $('#reg-password').getkeyboard();
+        // close the keyboard if the keyboard is visible and the button is clicked a second time
+        if ( kb.isOpen ) {
+          kb.close();
+        } else {
+          kb.reveal();
+        }
+      });
+
+      $('#reg-password').on('focusout',function(){
+          
+
+      });
+      function generatePassword(len, charSet){
+          charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!';
+          var randomString = '';
+          for (var i = 0; i < len; i++) {
+              var randomPoz = Math.floor(Math.random() * charSet.length);
+              randomString += charSet.substring(randomPoz,randomPoz+1);
+          }
+          return randomString;
+      }
+
+      $('#registration-form').on('submit',function(e){
+          e.preventDefault();
+          alert('here');
+
+          var password  = $('#reg-password').val();
+          var username  = $('#reg-username').val();
+          var email     = $('#reg-email').val();
+
+          var password_key = generatePassword(11);
+          var password_iv = generatePassword(10);
+
+          var key = CryptoJS.enc.Base64.parse(password_key);
+          var iv  = CryptoJS.enc.Base64.parse(password_iv);
+
+          var encrypted = CryptoJS.AES.encrypt(password, key, {iv: iv});
+          $(this).val(encrypted);
+          console.log(encrypted.toString());
+
+          /*var decrypted = CryptoJS.AES.decrypt(encrypted, key, {iv: iv});
+          console.log(decrypted.toString(CryptoJS.enc.Utf8));*/
       });
     </script>
 

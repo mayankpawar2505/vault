@@ -1,9 +1,4 @@
-input#password1{
+input#password1, input#password, input#reg-username, input#reg-email, input#reg-password{
 	width: 90%;
-	display: inline-block;
-}
-
-input#password{
-	width: 90%;
-	display: inline-block;
+	display: inline-block;	
 }
