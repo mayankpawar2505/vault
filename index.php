@@ -40,6 +40,9 @@
   </head>
 
   <body class="login">
+    <!-- Loader -->
+    <div class="loading">Loading&#8230;</div>
+
     <div>
       <a class="hiddenanchor" id="signup"></a>
       <a class="hiddenanchor" id="signin"></a>
@@ -47,14 +50,14 @@
       <div class="login_wrapper">
         <div class="animate form login_form">
           <section class="login_content">
-            <form>
+            <form method="POST" name="login_form" id="login-form">
               <h1>Login Form</h1>
               <div>
-                <input type="text" class="form-control login-input-form" placeholder="Username" id="password1" required="" />
+                <input type="text" class="form-control login-input-form" placeholder="Username" id="login-username" required="" />
                 <img id="password-opener1" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
-                <input type="password" class="form-control login-input-form" placeholder="Password" id="password" required="" />
+                <input type="password" class="form-control login-input-form" placeholder="Password" id="login-password" required="" />
                 <img id="password-opener" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
@@ -83,18 +86,18 @@
 
         <div id="register" class="animate form registration_form">
           <section class="login_content">
-            <form method="post" action="javascript:void(0);" name="registration_form" id="registration-form">
+            <form method="POST" name="registration_form" id="registration-form" >
               <h1>Create Account</h1>
               <div>
-                <input type="text" name="username" id="reg-username" class="form-control" placeholder="Username" />
+                <input type="text" name="username" id="reg-username" class="form-control" placeholder="Username" required="required" data-validate-length-range="6" data-validate-words="2" />
                 <img id="reg-username-opener" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
-                <input type="email" name="email" id="reg-email" class="form-control" placeholder="Email"/>
+                <input type="email" name="email" id="reg-email" class="form-control" placeholder="Email" required="required"/>
                 <img id="reg-email-opener" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
-                <input type="text" name="password" id="reg-password" class="form-control" placeholder="Password" />
+                <input type="password" name="password" id="reg-password" class="form-control" placeholder="Password" required="required"/>
                 <img id="reg-password-opener" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
@@ -123,9 +126,9 @@
     </div>
     <script src="vendors/CryptoJS-master/rollups/aes.js"></script>
     <script src="vendors/CryptoJS-master/components/enc-base64-min.js"></script>
-    <script src="vault/vendors/validator/validator.js"></script>
+
     <script type="text/javascript">
-      $('#password')
+      $('#login-password')
         .keyboard({
           openOn : null,
           stayOpen : true,
@@ -225,7 +228,7 @@
         })
         .addTyping();
 
-        $('#password1')
+        $('#login-username')
         .keyboard({
           openOn : null,
           stayOpen : true,
@@ -251,7 +254,7 @@
         .addTyping();
 
       $('#password-opener').click(function(){
-        var kb = $('#password').getkeyboard();
+        var kb = $('#login-password').getkeyboard();
         // close the keyboard if the keyboard is visible and the button is clicked a second time
         if ( kb.isOpen ) {
           kb.close();
@@ -260,7 +263,7 @@
         }
       });
       $('#password-opener1').click(function(){
-        var kb = $('#password1').getkeyboard();
+        var kb = $('#login-username').getkeyboard();
         // close the keyboard if the keyboard is visible and the button is clicked a second time
         if ( kb.isOpen ) {
           kb.close();
@@ -313,26 +316,161 @@
           return randomString;
       }
 
-      $('#registration-form').on('submit',function(e){
+      /* Register user */
+      $('#registration-form').submit(function(e){
           e.preventDefault();
-          alert('here');
+          
+          /* Validations */
+          var password  = $.trim($('#reg-password').val());
+          var username  = $.trim($('#reg-username').val());
+          var email     = $.trim($('#reg-email').val());
+          var is_valid  = new Array();
 
-          var password  = $('#reg-password').val();
-          var username  = $('#reg-username').val();
-          var email     = $('#reg-email').val();
+          var password_result = /^[A-Za-z0-9\d=!\-@._*]*$/.test(password) // consists of only these
+                                && /[a-z]/.test(password) // has a lowercase letter
+                                && /\d/.test(password) // has a digit
+                                && password.length >= 8;
+          
+          $('#reg-password-err').remove();
+          $('#reg-username-err').remove();
+          $('#reg-email-err').remove();
 
-          var password_key = generatePassword(11);
-          var password_iv = generatePassword(10);
+          if(password_result){
+            is_valid.push("true");
+          }else{
+            is_valid.push("false");
+            $('#reg-password-opener').after('<div id="reg-password-err">Invalid Password! Password consists of alphanumeric character with <b>-@._*</b> special characters</div>');
+          }
 
-          var key = CryptoJS.enc.Base64.parse(password_key);
-          var iv  = CryptoJS.enc.Base64.parse(password_iv);
+          if(username.length >= 3){
+            /* Check username is unique */
+            $.post('action/users/user_checker.php',{username:username, token:'verify_username'}, function(resp){
+              if(resp == "false"){
+                $('#reg-username-opener').after('<div id="reg-username-err">Username Alredy Exists. Please choose another!</div>');
+                is_valid.push("false");
+              }
+            });
+            
+            is_valid.push("true");
+          }else{
+            is_valid.push("false");
+            $('#reg-username-opener').after('<div id="reg-username-err">Username must be greater than 3 characters</div>');
+          }
 
-          var encrypted = CryptoJS.AES.encrypt(password, key, {iv: iv});
-          $(this).val(encrypted);
-          console.log(encrypted.toString());
+          var email_pattern = /^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([ \t]*\r\n)?[ \t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\u.36FDF0-\uFFEF]))*(([ \t]*\r\n)?[ \t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.?$/i;
+          var email_verify = email_pattern.test(email);
 
-          /*var decrypted = CryptoJS.AES.decrypt(encrypted, key, {iv: iv});
-          console.log(decrypted.toString(CryptoJS.enc.Utf8));*/
+          if(email_verify){
+            is_valid.push("true");
+
+            /* Check unique email id */
+            $.post('action/users/user_checker.php',{email:email, token:'verify_email'}, function(resp){
+              if(resp == "false"){
+                $('#reg-email-opener').after('<div id="reg-email-err">Email already present. Please login!</div>');
+                is_valid.push("false");
+              }
+            });
+
+          }else{
+            is_valid.push("false");
+            $('#reg-email-opener').after('<div id="reg-email-err">Email is Invalid</div>');
+          }
+
+          setTimeout(function(){
+            $('.loading').show();
+
+            if($.inArray("false",is_valid) > -1){
+              $('.loading').hide();
+              return false;
+            }else{
+
+                /* Submit form */
+                var password_key = generatePassword(11);
+                var password_iv = generatePassword(10);
+
+                var key = CryptoJS.enc.Base64.parse(password_key);
+                var iv  = CryptoJS.enc.Base64.parse(password_iv);
+
+                var encrypted = CryptoJS.AES.encrypt(password, key, {iv: iv}).toString();
+                var epassword = encrypted;
+
+                $.post('action/users/user_checker.php',{username:username, email:email,  password:epassword, key: password_key, iv:password_iv, token:'user_register'}, function(resp){
+                  if(resp > 0){
+                    alert('You have successfully registered. Please Login');
+                    window.location.href = 'index.php';
+                  }
+                });
+
+                $('.loading').hide();
+
+
+                // var decrypted = CryptoJS.AES.decrypt(encrypted, key, {iv: iv});
+                // console.log(decrypted.toString(CryptoJS.enc.Utf8));
+            }
+          }, 3000);
+      });
+
+      /* Login user */
+      $('#login-form').submit(function(e){
+          e.preventDefault();
+          
+          /* Validations */
+          var password  = $.trim($('#login-password').val());
+          var username  = $.trim($('#login-username').val());
+          var is_valid  = new Array();
+
+          var password_result = /^[A-Za-z0-9\d=!\-@._*]*$/.test(password) // consists of only these
+                                && /[a-z]/.test(password) // has a lowercase letter
+                                && /\d/.test(password) // has a digit
+                                && password.length >= 8;
+          
+          $('#login-password-err').remove();
+          $('#login-username-err').remove();
+         
+          if(password_result){
+            is_valid.push("true");
+          }else{
+            is_valid.push("false");
+            $('#password-opener').after('<div id="login-password-err">Invalid Password! Password consists of alphanumeric character with <b>-@._*</b> special characters</div>');
+          }
+
+          if(username.length >= 3){
+            is_valid.push("true");
+          }else{
+            is_valid.push("false");
+            $('#reg-username-opener').after('<div id="login-username-err">Username must be greater than 3 characters</div>');
+          }
+
+            $('.loading').show();
+
+            if($.inArray("false",is_valid) > -1){
+              $('.loading').hide();
+              return false;
+            }else{
+
+                /* Submit form */
+                var password_key = generatePassword(11);
+                var password_iv = generatePassword(10);
+
+                var key = CryptoJS.enc.Base64.parse(password_key);
+                var iv  = CryptoJS.enc.Base64.parse(password_iv);
+
+                var encrypted = CryptoJS.AES.encrypt(password, key, {iv: iv}).toString();
+                var epassword = encrypted;
+
+                $.post('action/users/user_checker.php',{username:username, email:email,  password:epassword, key: password_key, iv:password_iv, token:'user_login'}, function(resp){
+                  if(resp > 0){
+                    alert('You have successfully registered. Please Login');
+                    // window.location.href = 'index.php';
+                  }
+                });
+
+                $('.loading').hide();
+
+
+                // var decrypted = CryptoJS.AES.decrypt(encrypted, key, {iv: iv});
+                // console.log(decrypted.toString(CryptoJS.enc.Utf8));
+            }
       });
     </script>
 
