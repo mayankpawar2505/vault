@@ -61,7 +61,7 @@
                 <img id="password-opener" class="tooltip-tipsy" title="Click to open the virtual keyboard" src="vendors/Keyboard-master/css/images/keyboard.svg">
               </div>
               <div>
-                <a class="btn btn-default submit" href="index.html">Log in</a>
+                <button type="submit" class="btn btn-default submit" >Log in</button>
                 <a class="reset_pass" href="#">Lost your password?</a>
               </div>
 
@@ -124,8 +124,9 @@
         </div>
       </div>
     </div>
-    <script src="vendors/CryptoJS-master/rollups/aes.js"></script>
-    <script src="vendors/CryptoJS-master/components/enc-base64-min.js"></script>
+    <script src="vendors/cryptojs-aes-php-master/aes-json-format.js"></script>
+    <script type="text/javascript" src="vendors/cryptojs-aes-php-master/example/aes.js"></script>
+    <!-- <script type="text/javascript" src="vendors/cryptojs-aes-php-master/example/jquery.js"></script> -->
 
     <script type="text/javascript">
       $('#login-password')
@@ -150,8 +151,8 @@
               '{accept} {space} {left} {right}'
             ]
           }*/
-        })
-        .addTyping();
+      })
+      .addTyping();
 
         $('#reg-username')
         .keyboard({
@@ -302,12 +303,8 @@
         }
       });
 
-      $('#reg-password').on('focusout',function(){
-          
-
-      });
       function generatePassword(len, charSet){
-          charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!';
+          charSet = charSet || '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@-';
           var randomString = '';
           for (var i = 0; i < len; i++) {
               var randomPoz = Math.floor(Math.random() * charSet.length);
@@ -385,16 +382,17 @@
             }else{
 
                 /* Submit form */
-                var password_key = generatePassword(11);
-                var password_iv = generatePassword(10);
+                var password_key = generatePassword(16);
+                // var password_iv = generatePassword(16);
 
-                var key = CryptoJS.enc.Base64.parse(password_key);
-                var iv  = CryptoJS.enc.Base64.parse(password_iv);
+                // var key = CryptoJS.enc.Hex.parse(password_key);
+                // var iv  = CryptoJS.enc.Hex.parse(password_iv);
 
-                var encrypted = CryptoJS.AES.encrypt(password, key, {iv: iv}).toString();
+                // var encrypted = CryptoJS.AES.encrypt(password, key, {iv: iv}).toString();
+                var encrypted = CryptoJS.AES.encrypt(JSON.stringify(password), password_key, {format: CryptoJSAesJson}).toString();
                 var epassword = encrypted;
-
-                $.post('action/users/user_checker.php',{username:username, email:email,  password:epassword, key: password_key, iv:password_iv, token:'user_register'}, function(resp){
+                
+                $.post('action/users/user_checker.php',{username:username, email:email,  password:epassword, key: password_key, token:'user_register'}, function(resp){
                   if(resp > 0){
                     alert('You have successfully registered. Please Login');
                     window.location.href = 'index.php';
@@ -413,6 +411,7 @@
       /* Login user */
       $('#login-form').submit(function(e){
           e.preventDefault();
+          $('.login-err').remove();
           
           /* Validations */
           var password  = $.trim($('#login-password').val());
@@ -449,19 +448,16 @@
             }else{
 
                 /* Submit form */
-                var password_key = generatePassword(11);
-                var password_iv = generatePassword(10);
-
-                var key = CryptoJS.enc.Base64.parse(password_key);
-                var iv  = CryptoJS.enc.Base64.parse(password_iv);
-
-                var encrypted = CryptoJS.AES.encrypt(password, key, {iv: iv}).toString();
+                var password_key = generatePassword(16);
+                var encrypted = CryptoJS.AES.encrypt(JSON.stringify(password), password_key, {format: CryptoJSAesJson}).toString();
                 var epassword = encrypted;
 
-                $.post('action/users/user_checker.php',{username:username, email:email,  password:epassword, key: password_key, iv:password_iv, token:'user_login'}, function(resp){
-                  if(resp > 0){
-                    alert('You have successfully registered. Please Login');
-                    // window.location.href = 'index.php';
+                $.post('action/users/user_checker.php',{username:username,  password:epassword, key: password_key, token:'user_login'}, function(resp){
+                  var dt = $.parseJSON(resp);
+                  if(dt.resp == "true"){
+                    window.location.href = "dashboard.php";
+                  }else{
+                    $('#login-form h1').after('<small class="login-err">'+dt.err+'</small>');
                   }
                 });
 

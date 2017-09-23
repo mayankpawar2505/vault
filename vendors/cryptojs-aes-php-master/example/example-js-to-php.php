@@ -21,8 +21,7 @@ $(document).ready(function(){
 <h2>Example to encrypt with CryptoJS on client side and decrypt on PHP side</h2>
 <?php
 if(isset($_POST["decrypt"])){
-				include_once('../../vendors/CryptoJS-master/cryptojs-aes.php');
-    // include("../cryptojs-aes.php");
+    include("../cryptojs-aes.php");
     ?>
     Json value received: <input type="text" value="<?php echo htmlentities($_POST["json"])?>" size="90" disabled="disabled"/><br/>
     Passphrase: <input type="text" value="<?php echo $_POST["pass"]?>" size="90" disabled="disabled"/><br/>
@@ -42,14 +41,3 @@ if(isset($_POST["decrypt"])){
 
 </body>
 </html>
-<?php
-	die;
-	include_once('../config.php');
-
-	function test(){
-		global $mysqli;
-		print_r($mysqli);
-		die('heree');
-	}
-
-	test();
