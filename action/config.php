@@ -61,9 +61,9 @@
 			$_SESSION['token'] = $token;
 		}
 		if(isset($token) && !empty($token))
-			echo '<input type="hidden" name="csrf_token" value="'.$token.'" />';
+			echo '<input type="hidden" name="csrf_token" value="'.$token.'" id="csrf-token"/>';
 		else
-			echo 'asd';
+			echo '<input type="hidden" name="csrf_token" value="'.$_SESSION['token'].'" id="csrf-token" />';
   	}
 
 ?>
