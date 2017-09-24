@@ -28,8 +28,8 @@
                   <li><a href="dashboard.php"><i class="fa fa-home"></i> Home </a></li>
                   <li><a><i class="fa fa-edit"></i> Categories <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                      <li><a href="form.html"> Manage Categories</a></li>
-                      <li><a href="form_advanced.html"> Add Categories</a></li>
+                      <li><a href="dashboard.php"> Manage Categories</a></li>
+                      <li><a href="add-category.php"> Add Categories</a></li>
                     </ul>
                   </li>
                   <!-- <li><a><i class="fa fa-desktop"></i> UI Elements <span class="fa fa-chevron-down"></span></a>

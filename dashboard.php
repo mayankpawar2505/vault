@@ -80,7 +80,7 @@
                                 <td><?php echo $key+1; ?></td>
                                 <td><?php echo cryptoJsAesDecrypt($category["enc_key"], $category['category_name']); ?></td>
                                 <td>
-                                    <a href="view-data.php" class="btn btn-xs btn-success" title="View Data"><i class="fa fa-eye"></i></a> 
+                                    <a href="list-data.php?data=<?php echo base64_encode($category['id']) ?>" class="btn btn-xs btn-success" title="View Data"><i class="fa fa-eye"></i></a> 
                                     <a href="edit-category.php?data=<?php echo base64_encode($category['id']) ?>" class="btn btn-xs btn-warning" title="Edit Category"><i class="fa fa-pencil"></i></a> 
                                     <a href="delete-category.php?data=<?php echo base64_encode($category['id']) ?>" class="btn btn-xs btn-danger" title="Delete Category" onclick="return confirm('Are you sure you want to delete this Category ?')"><i class="fa fa-trash"></i></a> 
                                 </td>

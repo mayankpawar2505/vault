@@ -22,7 +22,7 @@
           <div class="col-md-12 col-sm-12 col-xs-12">
             <div class="x_panel">
                   <div class="x_title">
-                    <h2>Edit Category <small></small></h2>
+                    <h2>Edit Data <small></small></h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -42,26 +42,34 @@
                   </div>
                   <div class="x_content">
                     <br />
-                    <form id="category-form" data-parsley-validate class="form-horizontal form-label-left">
-                      <?php 
-                        echo csrf();
-
+                    <form id="data-form" data-parsley-validate class="form-horizontal form-label-left">
+                      <?php
                         /* get data */
                         $data = [
-                                    'fields' => ['id', 'category_name', 'enc_key'],
-                                    'table' => 'categories',
-                                    'where' => ['user_id' => $_SESSION['id'], 'id' => base64_decode($_GET['data'])],
-                                    'where_type' => ['i','i'] 
+                                    'fields' => ['id', 'title', 'body', 'enc_key','category_id'],
+                                    'table' => 'data',
+                                    'where' => ['id' => base64_decode($_GET['data'])],
+                                    'where_type' => ['i'] 
                                 ];
-                        $category_data = get_single_row_data($data);
+                        $d_data = get_single_row_data($data);
+                        // prd($d_data);
+                        echo csrf();
                       ?>
                       <div class="form-group">
-                        <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Category Name <span class="required">*</span>
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Title <span class="required">*</span>
                         </label>
                         <div class="col-md-6 col-sm-6 col-xs-12">
-                          <input type="text" id="category-name" required="required" class="form-control col-md-7 col-xs-12" name="category_name" value="<?php echo cryptoJsAesDecrypt($category_data["enc_key"], $category_data['category_name']); ?>">
+                          <input type="text" id="title" required="required" class="form-control col-md-7 col-xs-12" name="title" value="<?php echo cryptoJsAesDecrypt($d_data["enc_key"], $d_data['title']); ?>">
                         </div>
                       </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Body <span class="required">*</span>
+                        </label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                          <textarea name="body" class="form-control col-md-7 col-xs-12" id="body"><?php echo cryptoJsAesDecrypt($d_data["enc_key"], $d_data['body']); ?></textarea>
+                        </div>
+                      </div>
+                      <input type="hidden" name="catgory_id" id="category-id" value="<?php echo base64_decode($_GET['data']);?>" />
                       
                       <div class="ln_solid"></div>
                       <div class="form-group">
@@ -121,6 +129,9 @@
     <script src="vendors/pdfmake/build/pdfmake.min.js"></script>
     <script src="vendors/pdfmake/build/vfs_fonts.js"></script>
 
+    <!-- CK editor -->
+    <script src="//cdn.ckeditor.com/4.7.3/standard/ckeditor.js"></script>
+
     <!-- Crypto js  -->
     <script src="vendors/cryptojs-aes-php-master/aes-json-format.js"></script>
     <script type="text/javascript" src="vendors/cryptojs-aes-php-master/example/aes.js"></script>
@@ -128,25 +139,35 @@
     <script src="build/js/custom.min.js"></script>
     
     <script type="text/javascript">
-      $('#category-form').on('submit', function(e){
+      CKEDITOR.replace( 'body' );
+
+      $('#data-form').on('submit', function(e){
           e.preventDefault();
-          $('#category-err').remove();
-          var category_name = $.trim($('#category-name').val());
-          if(category_name.length > 0){
-            var password_key = generatePassword(16);
-            var id = "<?php echo $_GET['data']; ?>";
-            var enc_category_name = CryptoJS.AES.encrypt(JSON.stringify(category_name), password_key, {format: CryptoJSAesJson}).toString();
+          $('#data-title-err').remove();
+          $('#data-body-err').remove();
+          var title = $.trim($('#title').val());
+          var body = CKEDITOR.instances['body'].getData();
+          var category_id = $.trim($('#category-id').val());
+          
+          if(title.length > 0 && body.length > 0){
+            var password_key = generatePassword(16);    
+            var enc_title = CryptoJS.AES.encrypt(JSON.stringify(title), password_key, {format: CryptoJSAesJson}).toString();
+            var enc_body = CryptoJS.AES.encrypt(JSON.stringify(body), password_key, {format: CryptoJSAesJson}).toString();
             
-            $.post('action/categories/edit_category.php',{id:id, category_name: enc_category_name, k:password_key, token:$('#csrf-token').val()},function(resp){
-              console.log(resp);
-              if(resp){
-                alert('Category Updated Successfully');
-                window.location.href='dashboard.php';
+            $.post('action/data/edit_data.php',{title: enc_title, body:enc_body, category_id:category_id, k:password_key, token:$('#csrf-token').val(), id:'<?php echo base64_decode($_GET['data']); ?>'},function(resp){
+              if(resp == true){
+                alert('Data Added Successfully');
+                window.location.href='list-data.php?data=<?php echo $d_data['category_id']; ?>';
               }
             });
           
           }else{
-            $('#category-name').after('<div id="category-err">Please Insert Category name</div>');
+            if(title.length == 0){
+              $('#title').after('<div id="title-err">Please Insert Title name</div>');
+            }
+            if(body.length == 0){
+              $('#body').after('<div id="body-err">Please Insert body name</div>');
+            }
             return false;
           }
 
